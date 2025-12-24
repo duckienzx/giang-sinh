@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Merry Xmas (Smart Optimized)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Pinyon+Script&display=swap" rel="stylesheet">
+    <style>
+        body{margin:0;overflow:hidden;background-color:#0f0505;font-family:'Cinzel',serif;user-select:none; -webkit-tap-highlight-color: transparent;}
+        
+        #bg-gradient {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            background: radial-gradient(circle at 50% 40%, #7b0d1e 0%, #4a0e16 50%, #1a0505 100%);
+        }
+        
+        #black-void {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 5; opacity: 0; pointer-events: none; transition: opacity 1.5s ease;
+        }
+        
+        #frost-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
+            background: radial-gradient(circle, transparent 60%, rgba(20, 0, 5, 0.4) 100%);
+        }
+
+        #canvas-container{width:100vw;height:100vh;position:absolute;top:0;left:0;z-index:2;}
+        
+        #firework-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 6; 
+            pointer-events: none; display: none; 
+        }
+
+        #ui-layer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;padding-top:10vh; transition: opacity 0.5s;}
+        
+        #main-title {
+            font-family: 'Pinyon Script', cursive; font-size: 15vw; color: #eebb66; margin: 0; 
+            text-shadow: 0 2px 5px rgba(255, 215, 0, 0.3);
+            animation: floatTitle 4s ease-in-out infinite;
+            background: linear-gradient(to bottom, #fceabb 0%, #fccd4d 50%, #f8b500 51%, #fbdf93 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+            text-align: center; line-height: 1.2;
+        }
+        
+        #mode-indicator {
+            font-family: 'Cinzel', serif; font-size: 3vw; font-weight: 700; color: #FFD700;
+            letter-spacing: 4px; text-transform: uppercase; margin-top: 10px; 
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3); padding-bottom: 5px;
+        }
+
+        #secret-message {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-family: 'Cinzel', serif; font-weight: 700; font-size: 8vw; width: 90%; white-space: normal; line-height: 1.3;
+            text-transform: uppercase; letter-spacing: 4px; text-align: center; z-index: 100;
+            opacity: 0; pointer-events: none; 
+            background: linear-gradient(to bottom, #fff8db 0%, #FFD700 40%, #DAA520 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            transition: opacity 1.5s ease;
+        }
+
+        #lyrics-container{position:absolute;bottom:20%;width:100%;text-align:center;z-index:20;pointer-events:none}
+        #lyrics-text {
+            font-family: 'Pinyon Script', cursive; font-size: 6vw; color: #fff0f5;
+            text-shadow: 0 0 5px rgba(255,200,200,0.5); padding: 0 20px; transition: all 0.3s ease;
+        }
+
+        #webcam-wrapper {
+            position: absolute; bottom: 20px; left: 20px; width: 100px; height: 75px; z-index: 50;
+            background: #000; border: 1px solid #FFD700; border-radius: 4px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); overflow: hidden; opacity: 0.6;
+        }
+        #webcam-canvas { width: 100%; height: 100%; transform: scaleX(-1); border-radius: 2px; }
+        #cam-stats { display: none; }
+        
+        #start-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(15,5,5,0.9);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:opacity .8s}
+        .start-btn {
+            border: 1px solid #eebb66; padding: 15px 30px; color: #eebb66; font-size: 14px;
+            font-family: 'Cinzel', serif; letter-spacing: 4px; text-transform: uppercase;
+            background: rgba(0,0,0,0.6); margin-bottom: 15px; box-shadow: 0 0 20px rgba(238, 187, 102, 0.2); transition: all 0.3s;
+        }
+        .start-note{color:#886666;font-size:12px; font-style: italic;}
+        
+        #touch-hint {
+            position: absolute; bottom: 100px; width: 100%; text-align: center;
+            font-size: 10px; color: rgba(255,215,0,0.5); pointer-events: none;
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+
+        @keyframes floatTitle{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+        
+        @media (min-width: 768px) {
+            #main-title { font-size: 80px; }
+            #mode-indicator { font-size: 9px; }
+            #secret-message { font-size: 5vw; width: 80%; } 
+            #lyrics-text { font-size: 32px; }
+            #webcam-wrapper { width: 150px; height: 112px; opacity: 1; }
+            #cam-stats { display: block; position: absolute; bottom: 0; left: 0; width: 100%; text-align: center; font-family: 'Cinzel', serif; font-size: 6px; font-weight: 700; color: #FFD700; letter-spacing: 2px; text-transform: uppercase; z-index: 26; background: rgba(0,0,0,0.8); padding: 4px 0; border-top: 1px solid #FFD700; }
+        }
+    </style>
+    <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="black-void"></div>
+    <div id="bg-gradient"></div>
+    <div id="frost-overlay"></div>
+    
+    <div id="canvas-container"></div>
+    <canvas id="firework-canvas"></canvas>
+
+    <div id="secret-message">MERRY CHRISTMAS </div>
+
+    <div id="ui-layer">
+        <h1 id="main-title">Merry Xmas</h1>
+        <div id="mode-indicator">INTERACTIVE JAR</div>
+        <div id="touch-hint">SWIPE TO ROTATE &bull; TAP TO SWITCH</div>
+    </div>
+    <div id="start-overlay">
+        <div class="start-btn">CHẠM ĐỂ BẮT ĐẦU</div>
+        <div class="start-note">♫ Last Christmas</div>
+    </div>
+    <div id="lyrics-container"><span id="lyrics-text">...</span></div>
+    
+    <div id="webcam-wrapper">
+        <div id="cam-stats">SCAN | AI-LITE</div>
+        <canvas id="webcam-canvas"></canvas>
+    </div>
+
+    <video id="input_video" style="display:none; transform: scaleX(-1)" playsinline></video>
+    <audio id="bg-music" src="./audio.mp3" loop></audio>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 800;
+        
+        const ENABLE_POST_PROCESSING = true; 
+        
+        const TOTAL_PHOTOS = isMobile ? 8 : 20; 
+        const PARTICLE_RATIO = isMobile ? 0.3 : 1.0; 
+        
+        const AI_SKIP_FRAMES = isMobile ? 8 : 2; 
+
+        const LYRICS_DATA = [{time:0.00,text:"Last Christmas, I gave you my heart"},{time:4.00,text:"But the very next day, you gave it away"},{time:7.13,text:"Last Christmas, I gave you my heart"},{time:11.08,text:"But the very next day, you gave it away"},{time:15.08,text:"This year, to save me from tears"},{time:18.99,text:"I'll give it to someone special"},{time:23.12,text:"Last Christmas, I gave you my heart"},{time:27.02,text:"But the very next day, you gave it away"},{time:31.06,text:"This year, to save me from tears"},{time:34.97,text:"I'll give it to someone special"}];
+        
+        const zFactor = isMobile ? 1.4 : 1.0;
+        const SCENE_CONFIG = { 
+            scaleFar: isMobile ? 8.0 : 10.00, 
+            posFar: { x: 0.0, y: isMobile ? -0.2 : -0.6 }, 
+            camZFar: 7.7 * zFactor, 
+            scaleNear: 10.00, 
+            posNear: { x: 0.0, y: -0.7 }, 
+            camZNear: 2.5, 
+            zoomSpeed: 0.1, 
+            rotateSpeed: 0.08 
+        };
+
+        const LAYERS = [
+            { id: 'inner_snow', shape: 'Snowflake', count: Math.floor(1200 * PARTICLE_RATIO), opacity: 0.9, color: '#ffffff', speed: 0.0005, size: 0.06, radius: 0.48, startY: 1.1, endY: -0.3, drift: 0.01, twinkle: false, rotateWithJar: true },
+            { id: 'snow_main', shape: 'Snowflake', count: Math.floor(500 * PARTICLE_RATIO), opacity: 0.9, color: '#e0ffff', speed: 0.0010, size: 0.18, radius: 5.0, startY: 7.0, endY: -6.0, drift: 0.05, twinkle: true, rotateWithJar: true },
+            { id: 'gold_dust', shape: 'Circle', count: Math.floor(500 * PARTICLE_RATIO), opacity: 0.8, color: '#ffcc00', speed: 0.0006, size: 0.03, radius: 4.5, startY: 6.0, endY: -4.0, drift: 0.08, twinkle: true, rotateWithJar: true }
+        ];
+
+        let scene, camera, renderer, composer, bloomPass, carModel, mixer, particleSystems = {}, textureCache = {}, polaroidTextures = [], polaroidGroup, clock = new THREE.Clock(), bgParticleGroup;
+        let isGalleryMode = false, lastGesture = 'NONE', isZoomedIn = false, lastSwitchTime = 0, lastDropTime = 0, jarOffsetY = 0, inspectedPhoto = null;
+        const SWITCH_COOLDOWN = 1.0;
+        
+        const STATE = { 
+            hand: { detected: false, x: 0.5, y: 0.5, gesture: 'NONE' }, 
+            targetRotation: { x: 0, y: 0 },
+            currentRotation: { x: 0, y: 0 }
+        };
+        
+        let isFireworkMode = false;
+        
+        let touchStartX = 0, touchStartY = 0;
+        let isTouching = false;
+        let touchLastTap = 0;
+
+        const FW_CONFIG = { particleCount: isMobile ? 60 : 500, explosionRadius: 25, friction: 0.98, gravity: 0.04, focalLength: 800, autoFireRate: isMobile ? 120 : 100 };
+        let fwCanvas, fwCtx, fwWidth, fwHeight, fwCx, fwCy;
+        let fwParticles = [];
+        let fwFireworks = [];
+
+        function initFireworkCanvas() {
+            fwCanvas = document.getElementById('firework-canvas'); fwCtx = fwCanvas.getContext('2d');
+            resizeFw(); window.addEventListener('resize', resizeFw);
+        }
+        function resizeFw() {
+            fwWidth = window.innerWidth; fwHeight = window.innerHeight;
+            fwCanvas.width = fwWidth; fwCanvas.height = fwHeight;
+            fwCx = fwWidth / 2; fwCy = fwHeight / 2;
+        }
+        const fwRandom = (min, max) => Math.random() * (max - min) + min;
+
+        class Particle3D {
+            constructor(x, y, z, color) {
+                this.x = x; this.y = y; this.z = z; this.color = color; this.size = fwRandom(1, 3);
+                const theta = Math.random() * Math.PI * 2; const phi = Math.acos((Math.random() * 2) - 1);
+                const speed = fwRandom(5, FW_CONFIG.explosionRadius);
+                this.vx = speed * Math.sin(phi) * Math.cos(theta);
+                this.vy = speed * Math.sin(phi) * Math.sin(theta);
+                this.vz = speed * Math.cos(phi);
+                this.alpha = 1; this.decay = fwRandom(0.015, 0.03); 
+                this.last2Dx = 0; this.last2Dy = 0; this.hasMoved = false;
+            }
+            update() {
+                this.vx *= FW_CONFIG.friction; this.vy *= FW_CONFIG.friction; this.vz *= FW_CONFIG.friction;
+                this.vy += FW_CONFIG.gravity;
+                this.x += this.vx; this.y += this.vy; this.z += this.vz;
+                this.alpha -= this.decay;
+            }
+            draw() {
+                if(this.alpha <= 0.1) return; 
+                const scale = FW_CONFIG.focalLength / (FW_CONFIG.focalLength + this.z);
+                const screenX = fwCx + this.x * scale; const screenY = fwCy + this.y * scale;
+                if (scale < 0) return;
+                const currentSize = this.size * scale;
+                if (this.hasMoved) {
+                    fwCtx.beginPath(); fwCtx.strokeStyle = this.color; fwCtx.lineWidth = currentSize; fwCtx.globalAlpha = this.alpha * 0.7;
+                    fwCtx.moveTo(this.last2Dx, this.last2Dy); fwCtx.lineTo(screenX, screenY); fwCtx.stroke();
+                }
+                this.last2Dx = screenX; this.last2Dy = screenY; this.hasMoved = true;
+            }
+        }
+
+        class FireworkSeed {
+            constructor() {
+                this.x = fwRandom(fwWidth * 0.3, fwWidth * 0.7); this.y = fwHeight;
+                this.targetY = fwRandom(fwHeight * 0.15, fwHeight * 0.35);
+                this.speed = fwRandom(8, 12); this.angle = -Math.PI / 2;
+                this.vx = Math.cos(this.angle) * this.speed; this.vy = Math.sin(this.angle) * this.speed;
+                this.exploded = false;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy; this.vy += 0.1;
+                if (this.vy >= 0 || this.y <= this.targetY) { this.exploded = true; this.explode(); }
+            }
+            draw() {
+                fwCtx.globalAlpha = 1; fwCtx.strokeStyle = '#FFD700'; fwCtx.lineWidth = 2;
+                fwCtx.beginPath(); fwCtx.moveTo(this.x, this.y); fwCtx.lineTo(this.x, this.y + 10); fwCtx.stroke();
+            }
+            explode() {
+                const originX = this.x - fwCx; const originY = this.y - fwCy; const originZ = fwRandom(-100, 100);
+                const hueBase = fwRandom(40, 50);
+                for (let i = 0; i < FW_CONFIG.particleCount; i++) {
+                    const lightness = fwRandom(50, 80); const color = `hsl(${hueBase}, 100%, ${lightness}%)`;
+                    fwParticles.push(new Particle3D(originX, originY, originZ, color));
+                }
+            }
+        }
+
+        function loopFireworks() {
+            if (!isFireworkMode) return;
+            fwCtx.globalCompositeOperation = 'source-over';
+            fwCtx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            fwCtx.fillRect(0, 0, fwWidth, fwHeight);
+            fwCtx.globalCompositeOperation = 'lighter';
+
+            if (Math.random() * FW_CONFIG.autoFireRate < 2) fwFireworks.push(new FireworkSeed()); 
+
+            for (let i = fwFireworks.length - 1; i >= 0; i--) {
+                fwFireworks[i].update(); fwFireworks[i].draw();
+                if (fwFireworks[i].exploded) fwFireworks.splice(i, 1);
+            }
+            for (let i = fwParticles.length - 1; i >= 0; i--) {
+                fwParticles[i].update(); fwParticles[i].draw();
+                if (fwParticles[i].alpha <= 0) fwParticles.splice(i, 1);
+            }
+            requestAnimationFrame(loopFireworks);
+        }
+
+        function triggerFireworkMode() {
+            if (isFireworkMode) return;
+            isFireworkMode = true;
+            
+            const tl = gsap.timeline();
+            document.getElementById('firework-canvas').style.display = 'block';
+            tl.to('#black-void', {opacity: 1, duration: 1.5});
+            tl.to('#ui-layer', {opacity: 0, duration: 0.5}, 0);
+            tl.to('#secret-message', {opacity: 1, duration: 2, scale: 1.1, ease: "power2.out"}, 0.5);
+
+            polaroidGroup.children.forEach(p => {
+                tl.to(p.position, {x: 0, y: 0, z: 0, duration: 1, ease: "back.in(1.7)"}, 0);
+                tl.to(p.scale, {x: 0, y: 0, z: 0, duration: 1, ease: "back.in(1.7)"}, 0);
+            });
+            if(carModel) tl.to(carModel.scale, {x: 0, y: 0, z: 0, duration: 1, ease: "back.in(1.7)"}, 0);
+
+            setTimeout(() => { loopFireworks(); }, 800);
+        }
+
+        function exitFireworkMode() {
+            if (!isFireworkMode) return;
+            isFireworkMode = false;
+            const tl = gsap.timeline();
+            tl.to('#secret-message', {opacity: 0, duration: 0.5, scale: 1}, 0);
+            tl.to('#black-void', {opacity: 0, duration: 1});
+            tl.to('#ui-layer', {opacity: 1, duration: 1}, 0);
+
+            fwCtx.clearRect(0,0,fwWidth, fwHeight);
+            fwParticles = []; fwFireworks = [];
+            document.getElementById('firework-canvas').style.display = 'none';
+
+            if(carModel) tl.to(carModel.scale, {x: SCENE_CONFIG.scaleFar, y: SCENE_CONFIG.scaleFar, z: SCENE_CONFIG.scaleFar, duration: 1.5, ease: "elastic.out(1, 0.5)"}, 0.5);
+
+            polaroidGroup.children.forEach(p => {
+                p.position.copy(p.userData.startPos); p.scale.set(1,1,1); p.material.opacity = 0;
+            });
+            isGalleryMode = false;
+            document.getElementById('mode-indicator').innerText = "MODE: JAR CONTROL";
+            document.getElementById('mode-indicator').style.color = "rgba(255, 215, 0, 0.7)";
+            gsap.to(camera.position, {z: SCENE_CONFIG.camZFar, duration: 1.5});
+            gsap.to(window, { duration: 1.2, jarOffsetY: 0 });
+        }
+
+        function init() {
+            const overlay = document.getElementById('start-overlay');
+            const audio = document.getElementById('bg-music');
+            
+            overlay.addEventListener('click', () => {
+                overlay.style.opacity = 0;
+                setTimeout(() => overlay.remove(), 500);
+                initTouchControls(); 
+                audio.play().catch(e => { console.log("Audio Error:", e); });
+            });
+
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 0, SCENE_CONFIG.camZFar);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: "high-performance" }); 
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.0));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            
+            container.appendChild(renderer.domElement);
+
+            if(ENABLE_POST_PROCESSING) {
+                const renderScene = new RenderPass(scene, camera);
+                composer = new EffectComposer(renderer);
+                composer.addPass(renderScene);
+
+                const bloomRes = new THREE.Vector2(window.innerWidth/2, window.innerHeight/2);
+                bloomPass = new UnrealBloomPass(bloomRes, 1.5, 0.4, 0.85);
+                bloomPass.threshold = 0.85; bloomPass.strength = 0.8; bloomPass.radius = 0.5;
+                composer.addPass(bloomPass);
+            }
+
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+            
+            const dirLight = new THREE.DirectionalLight(0xffeebb, 1.2); 
+            dirLight.position.set(5, 10, 7); 
+            scene.add(dirLight);
+            const redLight = new THREE.PointLight(0xff0000, 0.5, 20); redLight.position.set(-5, 2, 0); scene.add(redLight);
+            scene.add(new THREE.AmbientLight(0x404040, 1.0));
+
+            loadTextures(); setupBackgroundParticles(); loadPolaroidTextures(); LAYERS.forEach(createLayerSystem); createPolaroids();
+
+            new GLTFLoader().load('./car.glb', (gltf) => {
+                carModel = gltf.scene; carModel.scale.setScalar(SCENE_CONFIG.scaleFar);
+                carModel.position.set(SCENE_CONFIG.posFar.x, SCENE_CONFIG.posFar.y, 0);
+                carModel.position.z = -0.5; carModel.rotation.set(0,0,0);
+                if (gltf.animations.length) { mixer = new THREE.AnimationMixer(carModel); mixer.clipAction(gltf.animations[0]).play(); }
+                scene.add(carModel);
+            });
+
+            initFireworkCanvas(); 
+            initHandTracking();
+            
+            window.addEventListener('resize', () => { 
+                camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); 
+                renderer.setSize(window.innerWidth, window.innerHeight); 
+                if(composer) composer.setSize(window.innerWidth, window.innerHeight);
+                resizeFw();
+            });
+            animate();
+        }
+
+        function initTouchControls() {
+            const el = document.getElementById('canvas-container');
+            
+            el.addEventListener('touchstart', (e) => {
+                if(e.touches.length === 1) {
+                    touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; isTouching = true;
+                }
+            }, {passive: false});
+
+            el.addEventListener('touchmove', (e) => {
+                if(!isTouching || isFireworkMode) return;
+                e.preventDefault(); 
+                if(e.touches.length === 1) {
+                    const x = e.touches[0].clientX; const y = e.touches[0].clientY;
+                    const dx = (x - touchStartX) * 0.005; const dy = (y - touchStartY) * 0.005;
+
+                    if(!isGalleryMode) {
+                        STATE.targetRotation.x += dy; STATE.targetRotation.y += dx;
+                        STATE.currentRotation.x = STATE.targetRotation.x; STATE.currentRotation.y = STATE.targetRotation.y;
+                        if(carModel) { carModel.rotation.y = STATE.currentRotation.y; carModel.rotation.x = STATE.currentRotation.x; }
+                    }
+                    touchStartX = x; touchStartY = y;
+                }
+            }, {passive: false});
+
+            el.addEventListener('touchend', (e) => {
+                isTouching = false;
+                const now = Date.now();
+                if (now - touchLastTap < 300) toggleMode();
+                touchLastTap = now;
+            });
+            
+            let longPressTimer;
+            el.addEventListener('touchstart', () => { longPressTimer = setTimeout(() => { if(isGalleryMode) triggerFireworkMode(); }, 1500); });
+            el.addEventListener('touchend', () => clearTimeout(longPressTimer));
+        }
+
+        function loadPolaroidTextures() {
+            const imgLoader = new THREE.ImageLoader(); imgLoader.crossOrigin = 'anonymous'; 
+            const cacheBuster = Date.now();
+            for (let i = 1; i <= TOTAL_PHOTOS; i++) {
+                const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 300; const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#fdfdfd'; ctx.fillRect(0, 0, 256, 300); ctx.fillStyle = '#eee'; ctx.fillRect(15, 15, 226, 226);
+                const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; polaroidTextures.push(texture);
+                const path = `./images/${i}.png?v=${cacheBuster}`;
+                imgLoader.load(path, (image) => {
+                    ctx.fillStyle = '#fdfdfd'; ctx.fillRect(0, 0, 256, 300); ctx.drawImage(image, 15, 15, 226, 226);
+                    ctx.fillStyle = '#111'; ctx.font = '24px Pinyon Script'; ctx.textAlign = 'center'; ctx.fillText(`Moment ${i}`, 128, 275);
+                    texture.needsUpdate = true;
+                }, undefined, () => {
+                    ctx.fillStyle = '#fdfdfd'; ctx.fillRect(0, 0, 256, 300); ctx.fillStyle = '#ffeebb'; ctx.fillRect(15, 15, 226, 226);
+                    ctx.fillStyle = '#800000'; ctx.font = 'bold 20px Cinzel'; ctx.textAlign = 'center'; ctx.fillText('NO IMAGE', 128, 120);
+                    texture.needsUpdate = true;
+                });
+            }
+        }
+
+        function updateLyrics() {
+            const audio = document.getElementById('bg-music'); const lyricBox = document.getElementById('lyrics-text');
+            if(!audio || audio.paused || LYRICS_DATA.length === 0) return;
+            const t = audio.currentTime; let currentLine = "";
+            for(let i=0; i<LYRICS_DATA.length; i++) { if (t >= LYRICS_DATA[i].time) { if (i === LYRICS_DATA.length - 1 || t < LYRICS_DATA[i+1].time) { currentLine = LYRICS_DATA[i].text; break; } } }
+            if (lyricBox.innerText !== currentLine) lyricBox.innerText = currentLine;
+        }
+
+        function loadTextures() {
+            const textureLoader = new THREE.TextureLoader(); textureCache['Snowflake'] = textureLoader.load('./snow.png'); 
+            const cvs = document.createElement('canvas'); cvs.width=64; cvs.height=64; const ctx = cvs.getContext('2d'); 
+            const g = ctx.createRadialGradient(32,32,0,32,32,30); g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.4,'rgba(255,255,255,0.5)'); g.addColorStop(1,'rgba(255,255,255,0)'); 
+            ctx.fillStyle=g; ctx.fillRect(0,0,64,64); textureCache['Circle'] = new THREE.CanvasTexture(cvs);
+        }
+
+        function setupBackgroundParticles() {
+            const count = isMobile ? 200 : 1500;
+            bgParticleGroup = new THREE.Group(); bgParticleGroup.position.z = -12; scene.add(bgParticleGroup);
+            const starGeo = new THREE.BufferGeometry(); const starPos = [];
+            for(let i=0; i<count; i++) starPos.push((Math.random()-0.5)*180, (Math.random()-0.5)*120, (Math.random()-0.5)*60);
+            starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+            bgParticleGroup.add(new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0xffeebb, size: 0.15, transparent: true, opacity: 0.8})));
+        }
+
+        function updateBackgroundParticles(time, dt) {
+            if(!bgParticleGroup) return;
+            bgParticleGroup.rotation.z = Math.sin(time * 0.02) * 0.02; bgParticleGroup.rotation.y = Math.sin(time * 0.03) * 0.03;
+        }
+
+        function createPolaroids() {
+            polaroidGroup = new THREE.Group(); const geometry = new THREE.PlaneGeometry(0.7, 0.9); 
+            const count = TOTAL_PHOTOS; const cols = 5; const radiusBase = 4.0; 
+            for (let i = 0; i < count; i++) {
+                const material = new THREE.MeshBasicMaterial({ map: polaroidTextures[i], side: THREE.DoubleSide, transparent: true, opacity: 0 });
+                const polaroid = new THREE.Mesh(geometry, material);
+                const row = Math.floor(i / cols); const col = i % cols; const yBase = -1.5 + (row * 1.25); const angleStep = (Math.PI * 2 * 0.8) / cols; 
+                const angleOffset = (row % 2 === 0) ? 0 : (angleStep / 2); const theta = -2.5 + (col * angleStep) + angleOffset; 
+                const x = radiusBase * Math.cos(theta); const z = radiusBase * Math.sin(theta); const targetRotY = Math.atan2(x, z) + Math.PI;
+                polaroid.userData = { targetPos: new THREE.Vector3(x + (Math.random()-0.5)*0.2, yBase + (Math.random()-0.5)*0.3, z + (Math.random()-0.5)*0.2), startPos: new THREE.Vector3(x * 5, yBase * 5, z * 5), floatOffset: Math.random() * 100, targetRot: { y: targetRotY, z: (Math.random() - 0.5) * 0.2 }, originalIndex: i };
+                polaroid.position.copy(polaroid.userData.startPos); polaroid.visible = false; polaroidGroup.add(polaroid);
+            }
+            scene.add(polaroidGroup);
+        }
+
+        function createLayerSystem(config) {
+            const geo = new THREE.BufferGeometry(); const pos = [], vel = [], off = [];
+            for (let i = 0; i < config.count; i++) {
+                const r = config.radius * Math.sqrt(Math.random()); const theta = Math.random() * 2 * Math.PI;
+                pos.push(r * Math.cos(theta), config.startY - Math.random()*(config.startY-config.endY), r * Math.sin(theta));
+                vel.push((Math.random() * 0.4) + 0.6); off.push(Math.random() * 100);
+            }
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('velocity', new THREE.Float32BufferAttribute(vel, 1)); geo.setAttribute('offset', new THREE.Float32BufferAttribute(off, 1));
+            const mat = new THREE.PointsMaterial({ size: config.size, color: new THREE.Color(config.color), map: textureCache[config.shape], transparent: true, opacity: config.opacity, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true });
+            const sys = new THREE.Points(geo, mat); sys.userData = { config: config }; particleSystems[config.id] = sys; scene.add(sys);
+        }
+
+        function toggleMode() {
+            if (isFireworkMode) return; 
+            const now = clock.getElapsedTime(); if (now - lastSwitchTime < SWITCH_COOLDOWN) return; 
+            lastSwitchTime = now; isGalleryMode = !isGalleryMode; const indicator = document.getElementById('mode-indicator');
+            if (isGalleryMode) {
+                indicator.innerText = "MODE: PHOTO GALLERY"; 
+                indicator.style.color = "#FFD700"; 
+                
+                gsap.to(window, { duration: 1.2, jarOffsetY: -8, ease: "power2.inOut" }); 
+                polaroidGroup.rotation.set(0,0,0);
+                polaroidGroup.children.forEach((polaroid, index) => {
+                    polaroid.visible = true; polaroid.position.copy(polaroid.userData.startPos); polaroid.material.opacity = 0;
+                    const t = polaroid.userData.targetPos; const r = polaroid.userData.targetRot;
+                    gsap.to(polaroid.position, { x: t.x, y: t.y, z: t.z, duration: 1.2, ease: "power3.out", delay: index * 0.03 });
+                    gsap.to(polaroid.rotation, { x: 0, y: r.y, z: r.z, duration: 1.2, ease: "power3.out", delay: index * 0.03 });
+                    gsap.to(polaroid.material, { opacity: 1, duration: 0.8, delay: index * 0.03 });
+                });
+            } else {
+                indicator.innerText = "MODE: JAR CONTROL"; 
+                indicator.style.color = "rgba(255, 215, 0, 0.7)"; 
+                
+                gsap.to(window, { duration: 1.2, jarOffsetY: 0, ease: "back.out(0.8)", delay: 0.2 }); 
+                polaroidGroup.children.forEach((polaroid, index) => {
+                    const s = polaroid.userData.startPos;
+                    gsap.to(polaroid.position, { x: s.x, y: s.y, z: s.z, duration: 1.0, ease: "power2.in", delay: index * 0.02 });
+                    gsap.to(polaroid.material, { opacity: 0, duration: 0.8, delay: index * 0.02 });
+                });
+            }
+        }
+
+        function updateParticles(time) {
+            if (isFireworkMode) return; 
+            Object.values(particleSystems).forEach(sys => {
+                const cfg = sys.userData.config;
+                if (cfg.id === 'inner_snow') { const alpha = 1.0 - Math.abs(jarOffsetY / 5.0); sys.material.opacity = Math.max(0, cfg.opacity * alpha); sys.position.y = jarOffsetY; }
+                const positions = sys.geometry.attributes.position.array; const velocities = sys.geometry.attributes.velocity.array; const offsets = sys.geometry.attributes.offset.array;
+                for(let i=0; i < positions.length/3; i++) {
+                    let ix = i*3, iy = i*3+1, iz = i*3+2; positions[iy] -= velocities[i] * cfg.speed * 10; 
+                    if (cfg.drift) { positions[ix] += Math.cos(time * 0.5 + offsets[i]) * cfg.drift * 0.1; positions[iz] += Math.sin(time * 0.3 + offsets[i]) * cfg.drift * 0.1; }
+                    if(positions[iy] < cfg.endY) { positions[iy] = cfg.startY; const r = cfg.radius * Math.sqrt(Math.random()); const t = Math.random() * 2 * Math.PI; positions[ix] = r * Math.cos(t); positions[iz] = r * Math.sin(t); }
+                    if (cfg.id === 'inner_snow') { const d = Math.sqrt(positions[ix]*positions[ix] + positions[iz]*positions[iz]); if (d > cfg.radius) { const ratio = (cfg.radius - 0.02) / d; positions[ix] *= ratio; positions[iz] *= ratio; } }
+                }
+                sys.geometry.attributes.position.needsUpdate = true;
+                if(carModel && cfg.rotateWithJar && inspectedPhoto === null && !isTouching) { 
+                     sys.rotation.y = carModel.rotation.y; sys.rotation.x = carModel.rotation.x; 
+                }
+            });
+        }
+
+        function updatePolaroids(time) {
+            if (isFireworkMode) return;
+            if(!polaroidGroup) return;
+            polaroidGroup.children.forEach((p, i) => {
+                if(p === inspectedPhoto) return; 
+                if (isGalleryMode && p.material.opacity > 0.5) {
+                    const off = p.userData.floatOffset; p.position.y = p.userData.targetPos.y + Math.sin(time * 0.8 + off) * 0.15; p.rotation.z = p.userData.targetRot.z + Math.sin(time * 0.7 + off) * 0.08;
+                }
+            });
+            if (isGalleryMode && inspectedPhoto === null) { polaroidGroup.rotation.y = carModel.rotation.y; polaroidGroup.rotation.x = carModel.rotation.x; }
+        }
+
+        function getClosestPolaroid() {
+            if(!polaroidGroup) return null; let closest = null; let minDistance = Infinity;
+            polaroidGroup.children.forEach(p => {
+                const worldPos = new THREE.Vector3(); p.getWorldPosition(worldPos); const distance = worldPos.distanceTo(camera.position);
+                if (distance < minDistance && distance < 6.0) { minDistance = distance; closest = p; }
+            }); return closest;
+        }
+
+        function animatePhotoPopup(show) {
+            const now = clock.getElapsedTime();
+            if (show) {
+                if (inspectedPhoto || now - lastDropTime < 0.8) return; inspectedPhoto = getClosestPolaroid(); if (!inspectedPhoto) return;
+                scene.attach(inspectedPhoto); inspectedPhoto.visible = true; inspectedPhoto.material.opacity = 1;
+                gsap.to(inspectedPhoto.position, { x: 0, y: 0, z: camera.position.z - 2.5, duration: 0.8, ease: "back.out(1.2)" });
+                gsap.to(inspectedPhoto.rotation, { x: 0, y: 0, z: 0, duration: 0.8 }); gsap.to(inspectedPhoto.scale, { x: 1.4, y: 1.4, z: 1.4, duration: 0.8 }); 
+            } else {
+                if (!inspectedPhoto) return; const p = inspectedPhoto; inspectedPhoto = null; lastDropTime = now; 
+                polaroidGroup.attach(p); const t = isGalleryMode ? p.userData.targetPos : p.userData.startPos; const r = p.userData.targetRot;
+                gsap.to(p.position, { x: t.x, y: t.y, z: t.z, duration: 0.8, ease: "back.out(1.0)" }); gsap.to(p.scale, { x: 1, y: 1, z: 1, duration: 0.7 });
+                if (isGalleryMode) gsap.to(p.rotation, { x: 0, y: r.y, z: r.z, duration: 0.7, ease: "power2.out" }); else gsap.to(p.material, { opacity: 0, duration: 0.5 });
+            }
+        }
+
+        function initHandTracking() {
+            const video = document.getElementById('input_video'); const canvas = document.getElementById('webcam-canvas'); const ctx = canvas.getContext('2d'); const stats = document.getElementById('cam-stats');
+            const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+            
+            hands.setOptions({
+                maxNumHands: 1, 
+                modelComplexity: 0, 
+                minDetectionConfidence: 0.5, 
+                minTrackingConfidence: 0.5
+            }); 
+            
+            hands.onResults(results => {
+                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                ctx.save(); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+                STATE.hand.gesture = 'NONE';
+                if (results.multiHandLandmarks.length > 0) {
+                    STATE.hand.detected = true; const lm = results.multiHandLandmarks[0]; STATE.hand.x = 1 - lm[0].x; STATE.hand.y = lm[0].y; 
+                    const tips = [8, 12, 16, 20]; const pips = [6, 10, 14, 18]; let extended = [];
+                    for(let i=0; i<4; i++) extended.push(Math.hypot(lm[tips[i]].x - lm[0].x, lm[tips[i]].y - lm[0].y) > Math.hypot(lm[pips[i]].x - lm[0].x, lm[pips[i]].y - lm[0].y));
+                    const pinchDist = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
+                    const isFist = extended.every(e => e === false);
+
+                    if (extended[0] && extended[1] && !extended[2] && !extended[3]) STATE.hand.gesture = 'VICTORY';
+                    else if (isFist) STATE.hand.gesture = 'FIST';
+                    else if (pinchDist < 0.05) STATE.hand.gesture = 'PINCH'; 
+                    else STATE.hand.gesture = 'OPEN';
+                } else { if(STATE.hand.detected) { STATE.hand.detected = false; STATE.hand.gesture = 'NONE'; } }
+                ctx.restore();
+            });
+
+            let frameCounter = 0;
+            const cameraUtils = new Camera(video, { 
+                onFrame: async () => { 
+                    if (frameCounter % AI_SKIP_FRAMES === 0) {
+                        await hands.send({image: video}); 
+                    }
+                    frameCounter++;
+                }, 
+                width: 320, 
+                height: 240 
+            }); 
+            cameraUtils.start();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate); 
+            const dt = clock.getDelta(); 
+            const time = clock.getElapsedTime();
+            
+            if (mixer) mixer.update(dt);
+            updateLyrics(); updateParticles(time); updatePolaroids(time); updateBackgroundParticles(time, dt);
+            
+            const currentGesture = STATE.hand.gesture;
+
+            if (currentGesture === 'VICTORY' && lastGesture !== 'VICTORY') toggleMode();
+            if (currentGesture === 'PINCH') { isZoomedIn = true; if (isGalleryMode) animatePhotoPopup(true); }
+            if (currentGesture === 'OPEN') { 
+                isZoomedIn = false; 
+                if (isGalleryMode) animatePhotoPopup(false); 
+                if (isFireworkMode) exitFireworkMode(); 
+            }
+            if (currentGesture === 'FIST' && isGalleryMode && !isFireworkMode) { triggerFireworkMode(); }
+
+            lastGesture = currentGesture;
+
+            if (isTouching) {
+                
+            } else if (STATE.hand.detected) {
+                const targetY = (STATE.hand.x - 0.5) * (Math.PI * 6.0); 
+                const targetX = (STATE.hand.y - 0.5) * (Math.PI * 1.0); 
+                
+                STATE.currentRotation.x += (targetX - STATE.currentRotation.x) * 0.1;
+                STATE.currentRotation.y += (targetY - STATE.currentRotation.y) * 0.1;
+
+                if (inspectedPhoto === null) {
+                     if (!isGalleryMode) { 
+                        if(carModel) { carModel.rotation.y = STATE.currentRotation.y; carModel.rotation.x = STATE.currentRotation.x; }
+                     } 
+                     else if(carModel) { 
+                        carModel.rotation.y = STATE.currentRotation.y * 0.5; 
+                        carModel.rotation.x = STATE.currentRotation.x * 0.5; 
+                     }
+                }
+            } else if(carModel && !isGalleryMode && inspectedPhoto === null) { 
+                carModel.rotation.y += 0.4 * dt; 
+                carModel.rotation.x *= 0.95; 
+                STATE.currentRotation.y = carModel.rotation.y;
+                STATE.currentRotation.x = carModel.rotation.x;
+            }
+
+            if (!isGalleryMode) {
+                let ts, tp, tz;
+                if (isZoomedIn) { ts = SCENE_CONFIG.scaleNear; tp = SCENE_CONFIG.posNear; tz = SCENE_CONFIG.camZNear; } 
+                else { ts = SCENE_CONFIG.scaleFar; tp = SCENE_CONFIG.posFar; tz = SCENE_CONFIG.camZFar; }
+                camera.position.z += (tz - camera.position.z) * SCENE_CONFIG.zoomSpeed;
+                if(carModel) { carModel.scale.setScalar(carModel.scale.x + (ts - carModel.scale.x) * SCENE_CONFIG.zoomSpeed); carModel.position.x += (tp.x - carModel.position.x) * SCENE_CONFIG.zoomSpeed; carModel.position.y += (tp.y - carModel.position.y) * SCENE_CONFIG.zoomSpeed; }
+            }
+            if (carModel) { carModel.position.y += jarOffsetY; if(jarOffsetY < -2) carModel.scale.setScalar((isZoomedIn ? SCENE_CONFIG.scaleNear : SCENE_CONFIG.scaleFar) * Math.max(0, 1 - (Math.abs(jarOffsetY)/10))); }
+            
+            if (composer && ENABLE_POST_PROCESSING) composer.render();
+            else renderer.render(scene, camera);
+        }
+        init();
+    </script>
+</body>
+</html>
