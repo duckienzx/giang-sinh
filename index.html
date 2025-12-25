@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Prata&family=Cormorant+Garamond:wght@400;500;600&family=Playfair+Display:wght@400;500;600&family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Merry Xmas (Smart Optimized)</title>
+    <title>Giáng Sinh Vui Vẻ - Duc Kien </title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Pinyon+Script&display=swap" rel="stylesheet">
@@ -115,9 +116,10 @@
     <div id="secret-message">MERRY CHRISTMAS </div>
 
     <div id="ui-layer">
-        <h1 id="main-title">Merry Xmas</h1>
+        <h1 id="main-title">Merry Christmas</h1>
         <div id="mode-indicator">INTERACTIVE JAR</div>
         <div id="touch-hint">SWIPE TO ROTATE &bull; TAP TO SWITCH</div>
+        <div id="signature">DUC KIEN</div>
     </div>
     <div id="start-overlay">
         <div class="start-btn">CHẠM ĐỂ BẮT ĐẦU</div>
@@ -687,6 +689,21 @@
             if (composer && ENABLE_POST_PROCESSING) composer.render();
             else renderer.render(scene, camera);
         }
+       const sign = document.createElement('div');
+sign.textContent = 'DUC KIEN';
+sign.style.all = 'unset';
+sign.style.position = 'fixed';
+sign.style.bottom = '10px';
+sign.style.right = '10px';
+sign.style.fontFamily = "'Cormorant Garamond', serif";
+sign.style.fontSize = '18px';
+sign.style.fontWeight = '400'; 
+sign.style.letterSpacing = '0.8px';
+sign.style.color = '#E6C97A';
+sign.style.zIndex = '99999';
+sign.style.pointerEvents = 'none';
+
+document.body.appendChild(sign);
         init();
     </script>
 </body>
